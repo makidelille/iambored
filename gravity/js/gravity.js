@@ -5,15 +5,16 @@ var G = 6;
 var FRICTION = 1;
 
 var maxSlider,gSlider,frictionSlider;
+var maxP, gP, frictionP;
 
 function setup(){
   createCanvas(1200,1200);
 
-  createP("Max");
-  maxSlider = createSlider(1,500,200);
-  createP("G");
-  gSlider = createSlider(0.1,60,6);
-  createP("friction");
+  maxP = createP("Max");
+  maxSlider = createSlider(0,500,200);
+  gP = createP("G");
+  gSlider = createSlider(0,600,6);
+  frictionP = createP("friction");
   frictionSlider = createSlider(0,100,100);
 
 
@@ -50,6 +51,11 @@ function draw(){
   G = gSlider.value();
   FRICTION = frictionSlider.value() / 100;
   MAX = maxSlider.value();
+
+  maxP.html('MAX : ' + MAX);
+  gP.html('G : ' + G);
+  frictionP.html('Friction : ' + FRICTION);
+
 
   background(128);
 
