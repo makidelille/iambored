@@ -18,21 +18,21 @@ function Particule2D(x,y,m,c){
     this.acc.mult(0);
 
     //we bound in the window
-    if(this.pos.x > width){
-      this.pos.x = 0;
-    }
-
-    if(this.pos.x < 0){
-      this.pos.x = width;
-    }
-
-    if(this.pos.y > height){
-      this.pos.y = 0;
-    }
-
-    if(this.pos.y < 0){
-      this.pos.y = height;
-    }
+    // if(this.pos.x > width){
+    //   this.pos.x = 0;
+    // }
+    //
+    // if(this.pos.x < 0){
+    //   this.pos.x = width;
+    // }
+    //
+    // if(this.pos.y > height){
+    //   this.pos.y = 0;
+    // }
+    //
+    // if(this.pos.y < 0){
+    //   this.pos.y = height;
+    // }
     var MAX_SIZE = 2000;
     while(this.prev.length >= MAX_SIZE){
       this.prev.splice(0,1);
@@ -41,19 +41,20 @@ function Particule2D(x,y,m,c){
   }
 
   this.applyForce = function(f){
-    f.mult(1/ sq(this.mass));
+    f.mult(1/ this.mass);
     this.acc.add(f);
   }
 
   this.showForce = false;
 
-  this.show = function(showForce){
-    //push();
+  this.show = function(zoomFactor){
+    push();
+    translate(width/2,height/2);
     //beginShape();
     stroke(c);
 //    strokeWeight(1);
-    strokeWeight(sqrt(this.mass));
-    point(this.pos.x, this.pos.y);
+    strokeWeight(zoomFactor * sqrt(this.mass));
+    point(this.pos.x * zoomFactor, this.pos.y * zoomFactor);
     //vertex(this.pos.x, this.pos.y);
     //for(var i=0; i< this.prev.length; i++){
     //  console.log(this.prev[i]);
@@ -61,7 +62,7 @@ function Particule2D(x,y,m,c){
     //  vertex(prev.x, prev.y);
     //}
     //endShape();
-    //pop();
+    pop();
     //if(showForce) this.showForce = true;
   }
 
@@ -86,7 +87,7 @@ function Particule2D(x,y,m,c){
 
 
     var force = G  * (attractor.mass * this.mass) / distSq;
-    if(distSq < (this.mass + attractor.mass)/9){
+    if(distSq < (this.mass + attractor.mass)/4){
       //collision
       if(this.mass > attractor.mass){
           this.collide(attractor);
