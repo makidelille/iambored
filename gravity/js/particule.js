@@ -2,7 +2,7 @@ function Particule2D(x,y,m,c){
   this.color = c;
   this.pos = createVector(x,y);
   this.mass = m;
-  this.vel = createVector();//p5.Vector.random2D(); //createVector();
+  this.vel = createVector();
   this.acc = createVector();
   this.prev = [];
 
@@ -34,17 +34,20 @@ function Particule2D(x,y,m,c){
 
   this.showForce = false;
 
-  this.show = function(zoomFactor){
+  this.show = function(zoomFactor, traces){
     push();
     translate(width/2,height/2);
     stroke(c);
-    strokeWeight(zoomFactor * sqrt(this.mass));
+    var absMass = this.mass < 0 ? -this.mass : this.mass; 
+    strokeWeight(zoomFactor * sqrt(absMass));
     point(this.pos.x * zoomFactor, this.pos.y * zoomFactor);
-    for(var i=0; i< this.prev.length; i++){
-     var prev = this.prev[i];
-     stroke(c, 20);
-     strokeWeight(zoomFactor);
-     point(prev.x* zoomFactor, prev.y* zoomFactor);
+    if(traces){
+      for(var i=0; i< this.prev.length; i++){
+       var prev = this.prev[i];
+       stroke(c, 20);
+       strokeWeight(zoomFactor);
+       point(prev.x* zoomFactor, prev.y* zoomFactor);
+      }
     }
     pop();
   }
@@ -65,6 +68,7 @@ function Particule2D(x,y,m,c){
   }
 
   this.attract = function(attractor){
+    if(!G || !FRICTION) return;
     var vect = createVector();
     //we do the calculation by hand it's faster;
     vect.x = attractor.pos.x - this.pos.x;

@@ -1,6 +1,7 @@
 
-var particules = []
-var MAX, G, FRICTION,SPAWN ,MAX_DIST = 50000,MAX_SIZE = 16;
+var universe;
+var universes = [];
+var MAX, G, FRICTION,SPAWN ,MAX_DIST = 2000,MAX_SIZE = 16;
 
 var maxSlider,gSlider,frictionSlider;
 var spawnCheckbox;
@@ -11,9 +12,9 @@ function setup(){
   frameRate(244);
 
   maxP = createP("Max");
-  maxSlider = createSlider(0,10000,200);
+  maxSlider = createSlider(0,1000,200);
   gP = createP("G");
-  gSlider = createSlider(0,100,6);
+  gSlider = createSlider(-100,100,6);
   frictionP = createP("friction");
   frictionSlider = createSlider(0,100,100);
   spawnCheckbox = createCheckbox();
@@ -28,10 +29,10 @@ function setup(){
   zoom = 1;
 
 
+  universe = new Universe2D(MAX_DIST);
+  //implement multivesrse with this as one universe
 
   load();
-
-  background(128);
 }
 
 var min_zoom =  0.001;
@@ -49,6 +50,7 @@ function mousePressedCanvas(){
   prevX = mouseX;
   prevY = mouseY;
   pressed = true;
+  return false;
 }
 
 function mouseDraggedCanvas(){
@@ -85,7 +87,7 @@ function draw(){
     camY+=speedfactor;
   }
   if(keyIsDown(32)){
-    particules.push(new Particule2D(1/zoom * (mouseX + camX - width/2), 1/zoom * (mouseY + camY - height/2),random(4, 100), color(random(255),random(255),random(255))));
+    universe.spawn(1/zoom * (mouseX + camX - width/2), 1/zoom * (mouseY + camY - height/2), zoom, 4);
   }
 
 
@@ -101,40 +103,25 @@ function draw(){
   frictionP.html('Friction : ' + FRICTION);
 
 
-  background(128);
+  background(128); //change universe background
 
   textSize(16);
-  text(frameRate().toFixed(0)+"," + particules.length + " : " + camX + "," + camY + "," + zoom.toFixed(3) ,5, 5 + 16);
+  text(frameRate().toFixed(0)+"," + universe.particules.length + " : " + camX + "," + camY + "," + zoom.toFixed(3) ,5, 5 + 16);
   fill(255);
 
   camera(camX,camY,0);
 
 
-  for(var i=0; i< particules.length; i++){
-      for(var j=0; j < particules.length; j++){
-        if(i == j) continue;
-        particules[i].attract(particules[j]);
-      }
-  }
+  universe.update();
+  universe.show(zoom);
 
-    for(var i=particules.length-1; i>= 0 ; i--){
-      if(particules[i].isDead) {
-        particules.splice(i,1);
-      }else{
-        particules[i].update();
-        particules[i].show(zoom);
-
-      }
-
-    }
-
-   if(particules.length < MAX && SPAWN)
-       particules.push(new Particule2D(random(-width, width),random(-height, height),random(1,9), color(random(255),random(255),random(255))));
+   if(universe.particules.length < MAX && SPAWN)
+       universe.spawn();
 
 }
 
 function load(loadString){
-  particules = [];
+  universe.particules = [];
   if(loadString){
     eval(loadString);
   }else{
@@ -152,15 +139,15 @@ function preset1(){
   maxSlider.value(0);
   spawnCheckbox.checked(false);
 
-  particules.push(new Particule2D(0,-0,1000, color(255,0,0)));
-  particules.push(new Particule2D(0,300,20, color(0,0,255)));
-  particules[1].vel = (createVector(6 * 4000 * 20/ 100000,0));
-  particules.push(new Particule2D(0,-300,20, color(0,0,255)));
-  particules[2].vel = (createVector(-6 * 4000 * 20/ 100000,0));
-  particules.push(new Particule2D(0,150,10, color(0,0,255)));
-  particules[3].vel = (createVector(-6 * 2500 * 10/ sq(150),0));
-  particules.push(new Particule2D(0,-150,10, color(0,0,255)));
-  particules[4].vel = (createVector(6 * 2500 * 10/ sq(150),0));
+  universe.add(new Particule2D(0,-0,-1000, color(255,0,0)));
+  universe.add(new Particule2D(0,300,-20, color(0,0,255)));
+  universe.particules[1].vel = (createVector(6 * 4000 * 20/ 100000,0));
+  universe.add(new Particule2D(0,-300,-20, color(0,0,255)));
+  universe.particules[2].vel = (createVector(-6 * 4000 * 20/ 100000,0));
+  universe.add(new Particule2D(0,150,-10, color(0,0,255)));
+  universe.particules[3].vel = (createVector(-6 * 2500 * 10/ sq(150),0));
+  universe.add(new Particule2D(0,-150,-10, color(0,0,255)));
+  universe.particules[4].vel = (createVector(6 * 2500 * 10/ sq(150),0));
 
 }
 
