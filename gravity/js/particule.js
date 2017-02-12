@@ -10,37 +10,24 @@ function Particule2D(x,y,m,c){
   this.update = function(){
 
     this.vel.mult(FRICTION);
-    //this.prev.push(this.pos);
+    this.prev.push(this.pos.copy());
 
-    //console.log(this.prev.length);
     this.pos.add(this.vel);
     this.vel.add(this.acc);
     this.acc.mult(0);
 
-    //we bound in the window
-    // if(this.pos.x > width){
-    //   this.pos.x = 0;
-    // }
-    //
-    // if(this.pos.x < 0){
-    //   this.pos.x = width;
-    // }
-    //
-    // if(this.pos.y > height){
-    //   this.pos.y = 0;
-    // }
-    //
-    // if(this.pos.y < 0){
-    //   this.pos.y = height;
-    // }
-    var MAX_SIZE = 2000;
+
+    if(dist(0,0, this.pos.x, this.pos.y) > (MAX_DIST)){
+      this.kill();
+    }
+
     while(this.prev.length >= MAX_SIZE){
       this.prev.splice(0,1);
     }
 
   }
 
-  this.applyForce = function(f){
+  this.applyForce = function(f){ //slow
     f.mult(1/ this.mass);
     this.acc.add(f);
   }
@@ -50,20 +37,16 @@ function Particule2D(x,y,m,c){
   this.show = function(zoomFactor){
     push();
     translate(width/2,height/2);
-    //beginShape();
     stroke(c);
-//    strokeWeight(1);
     strokeWeight(zoomFactor * sqrt(this.mass));
     point(this.pos.x * zoomFactor, this.pos.y * zoomFactor);
-    //vertex(this.pos.x, this.pos.y);
-    //for(var i=0; i< this.prev.length; i++){
-    //  console.log(this.prev[i]);
-    //  var prev = this.prev[i];
-    //  vertex(prev.x, prev.y);
-    //}
-    //endShape();
+    for(var i=0; i< this.prev.length; i++){
+     var prev = this.prev[i];
+     stroke(c, 20);
+     strokeWeight(zoomFactor);
+     point(prev.x* zoomFactor, prev.y* zoomFactor);
+    }
     pop();
-    //if(showForce) this.showForce = true;
   }
 
   this.kill = function(){
@@ -82,7 +65,10 @@ function Particule2D(x,y,m,c){
   }
 
   this.attract = function(attractor){
-    var vect = p5.Vector.sub(attractor.pos, this.pos);
+    var vect = createVector();
+    //we do the calculation by hand it's faster;
+    vect.x = attractor.pos.x - this.pos.x;
+    vect.y = attractor.pos.y - this.pos.y;
     var distSq = vect.magSq();
 
 

@@ -1,6 +1,6 @@
 
 var particules = []
-var MAX, G, FRICTION,SPAWN;
+var MAX, G, FRICTION,SPAWN ,MAX_DIST = 50000,MAX_SIZE = 16;
 
 var maxSlider,gSlider,frictionSlider;
 var spawnCheckbox;
@@ -8,7 +8,7 @@ var maxP, gP, frictionP;
 var camX,camY,zoom;
 
 function setup(){
-
+  frameRate(244);
 
   maxP = createP("Max");
   maxSlider = createSlider(0,10000,200);
@@ -18,7 +18,10 @@ function setup(){
   frictionSlider = createSlider(0,100,100);
   spawnCheckbox = createCheckbox();
 
-  createCanvas(800,800);
+  var c = createCanvas(800,800);
+  c.mousePressed(mousePressedCanvas);
+  c.mouseMoved(mouseDraggedCanvas);
+  c.mouseWheel(mouseWheelCanvas);
 
   camX = 0;
   camY = 0;
@@ -31,17 +34,41 @@ function setup(){
   background(128);
 }
 
-
-function mouseWheel(event){
-  zoom += event.delta/1000;
-  if(zoom < 0.5) zoom = 0.5;
+var min_zoom =  0.001;
+function mouseWheelCanvas(event){
+  zoom -= zoom * event.deltaY/1000;
+  if(zoom < min_zoom) zoom = min_zoom;
+  return false;
 }
 
 
-
-function mousePressed(){
-  particules.push(new Particule2D(1/zoom * (mouseX + camX - width/2), 1/zoom * (mouseY + camY - height/2),random(4, 100), color(random(255),random(255),random(255))))
+var prevX = 0;
+var prevY = 0;
+var pressed = false;
+function mousePressedCanvas(){
+  prevX = mouseX;
+  prevY = mouseY;
+  pressed = true;
 }
+
+function mouseDraggedCanvas(){
+  if(!pressed) return true;
+  noCursor();
+  var dx = prevX - mouseX;
+  var dy = prevY - mouseY;
+  camX += dx;
+  camY += dy;
+  prevX = mouseX;
+  prevY = mouseY;
+  return false;
+}
+
+function mouseReleased(){
+  pressed = false;
+  cursor();
+}
+
+
 
 var speedfactor = 10;
 function draw(){
@@ -57,11 +84,16 @@ function draw(){
   if(keyIsDown(DOWN_ARROW)){
     camY+=speedfactor;
   }
+  if(keyIsDown(32)){
+    particules.push(new Particule2D(1/zoom * (mouseX + camX - width/2), 1/zoom * (mouseY + camY - height/2),random(4, 100), color(random(255),random(255),random(255))));
+  }
 
-  camera(camX,camY,0);
+
+
   G = gSlider.value();
   FRICTION = frictionSlider.value() / 100;
   MAX = maxSlider.value();
+
   SPAWN = spawnCheckbox.checked();
 
   maxP.html('MAX : ' + MAX);
@@ -70,6 +102,13 @@ function draw(){
 
 
   background(128);
+
+  textSize(16);
+  text(frameRate().toFixed(0)+"," + particules.length + " : " + camX + "," + camY + "," + zoom.toFixed(3) ,5, 5 + 16);
+  fill(255);
+
+  camera(camX,camY,0);
+
 
   for(var i=0; i< particules.length; i++){
       for(var j=0; j < particules.length; j++){
