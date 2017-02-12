@@ -1,4 +1,9 @@
 function Particule2D(x,y,m,c){
+
+  this.G;
+  this.FRICTION;
+
+
   this.color = c;
   this.pos = createVector(x,y);
   this.mass = m;
@@ -7,9 +12,15 @@ function Particule2D(x,y,m,c){
   this.prev = [];
 
 
+  this.setup = function(newG, newF){
+    this.G = newG;
+    this.FRICTION  = newF;
+  }
+
+
   this.update = function(){
 
-    this.vel.mult(FRICTION);
+    this.vel.mult(this.FRICTION);
     this.prev.push(this.pos.copy());
 
     this.pos.add(this.vel);
@@ -17,9 +28,7 @@ function Particule2D(x,y,m,c){
     this.acc.mult(0);
 
 
-    if(dist(0,0, this.pos.x, this.pos.y) > (MAX_DIST)){
-      this.kill();
-    }
+
 
     while(this.prev.length >= MAX_SIZE){
       this.prev.splice(0,1);
@@ -38,7 +47,7 @@ function Particule2D(x,y,m,c){
     push();
     translate(width/2,height/2);
     stroke(c);
-    var absMass = this.mass < 0 ? -this.mass : this.mass; 
+    var absMass = this.mass < 0 ? -this.mass : this.mass;
     strokeWeight(zoomFactor * sqrt(absMass));
     point(this.pos.x * zoomFactor, this.pos.y * zoomFactor);
     if(traces){
@@ -68,7 +77,7 @@ function Particule2D(x,y,m,c){
   }
 
   this.attract = function(attractor){
-    if(!G || !FRICTION) return;
+    if(!this.G || !this.FRICTION) return;
     var vect = createVector();
     //we do the calculation by hand it's faster;
     vect.x = attractor.pos.x - this.pos.x;

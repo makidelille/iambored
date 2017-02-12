@@ -1,5 +1,4 @@
 
-var universe;
 var universes = [];
 var MAX, G, FRICTION,SPAWN ,MAX_DIST = 2000,MAX_SIZE = 16;
 
@@ -26,13 +25,19 @@ function setup(){
 
   camX = 0;
   camY = 0;
-  zoom = 1;
+  zoom = 0.07;
 
 
-  universe = new Universe2D(MAX_DIST);
+  var universe = new Universe2D(MAX_DIST);
+  universe.moveTo(200,200);
+  universes.push(universe);
   //implement multivesrse with this as one universe
+  load(preset1,universe);
 
-  load();
+  var universe = new Universe2D(MAX_DIST * 4);
+  universe.moveTo(-200,-200);
+  universes.push(universe);
+  load(randompreset, universe);
 }
 
 var min_zoom =  0.001;
@@ -46,10 +51,24 @@ function mouseWheelCanvas(event){
 var prevX = 0;
 var prevY = 0;
 var pressed = false;
+var uniSelect;
 function mousePressedCanvas(){
   prevX = mouseX;
   prevY = mouseY;
   pressed = true;
+  var changed = false;
+  for(var i=0; i< universes.length; i++){
+    var universe = universes[i];
+    if(dist(1/zoom * (mouseX + camX - width/2), 1/zoom * (mouseY + camY - height/2), 1/zoom * universe.pos.x, 1/zoom * universe.pos.y) < universe.size){
+      universe.selected = true;
+      uniSelect = universe;
+      changed = true;
+    }else{
+      universe.selected = false;
+    }
+  }
+  if(!changed) uniSelect = undefined;
+
   return false;
 }
 
@@ -87,7 +106,8 @@ function draw(){
     camY+=speedfactor;
   }
   if(keyIsDown(32)){
-    universe.spawn(1/zoom * (mouseX + camX - width/2), 1/zoom * (mouseY + camY - height/2), zoom, 4);
+    if(uniSelect)
+      uniSelect.spawn(1/zoom * (mouseX + camX - width/2), 1/zoom * (mouseY + camY - height/2), zoom, 4);
   }
 
 
@@ -106,54 +126,50 @@ function draw(){
   background(128); //change universe background
 
   textSize(16);
-  text(frameRate().toFixed(0)+"," + universe.particules.length + " : " + camX + "," + camY + "," + zoom.toFixed(3) ,5, 5 + 16);
+  text(frameRate().toFixed(0)+"," + universes.length + " : " + camX + "," + camY + "," + zoom.toFixed(3) ,5, 5 + 16);
   fill(255);
 
   camera(camX,camY,0);
 
+  for(var i=0; i< universes.length; i++){
+    universes[i].update();
+    universes[i].show(zoom);
 
-  universe.update();
-  universe.show(zoom);
 
-   if(universe.particules.length < MAX && SPAWN)
-       universe.spawn();
-
-}
-
-function load(loadString){
-  universe.particules = [];
-  if(loadString){
-    eval(loadString);
-  }else{
-    preset1();
   }
 
 
+
+
+}
+
+function load(f, universe){
+  universe.particules = [];
+  if(typeof f === "string"){
+    eval("(" + f +  ")")(universe);
+  }else if(typeof f === "function"){
+    f(universe);
+  }
 }
 
 
-function preset1(){
+function preset1(universe){
 
-  frictionSlider.value(100);
-  gSlider.value(6);
-  maxSlider.value(0);
-  spawnCheckbox.checked(false);
 
-  universe.add(new Particule2D(0,-0,-1000, color(255,0,0)));
-  universe.add(new Particule2D(0,300,-20, color(0,0,255)));
+  universe.setup(6,1,0,false)
+
+  universe.add(new Particule2D(0,-0,1000, color(255,0,0)));
+  universe.add(new Particule2D(0,300,20, color(0,0,255)));
   universe.particules[1].vel = (createVector(6 * 4000 * 20/ 100000,0));
-  universe.add(new Particule2D(0,-300,-20, color(0,0,255)));
+  universe.add(new Particule2D(0,-300,20, color(0,0,255)));
   universe.particules[2].vel = (createVector(-6 * 4000 * 20/ 100000,0));
-  universe.add(new Particule2D(0,150,-10, color(0,0,255)));
+  universe.add(new Particule2D(0,150,10, color(0,0,255)));
   universe.particules[3].vel = (createVector(-6 * 2500 * 10/ sq(150),0));
-  universe.add(new Particule2D(0,-150,-10, color(0,0,255)));
+  universe.add(new Particule2D(0,-150,10, color(0,0,255)));
   universe.particules[4].vel = (createVector(6 * 2500 * 10/ sq(150),0));
 
 }
 
-function randompreset(){
-  frictionSlider.value(100);
-  gSlider.value(6);
-  maxSlider.value(200);
-  spawnCheckbox.checked(true);
+function randompreset(universe){
+  universe.setup(6,100,200,true);
 }
